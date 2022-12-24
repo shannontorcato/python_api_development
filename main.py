@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status
 from fastapi.params import Body
 from pydantic import BaseModel
 from typing import Optional
@@ -14,6 +14,11 @@ class Post(BaseModel):
     rating: Optional[int] = None
 
 my_posts = [{"title":"title of post 1", "content":"content of post 1", "id":1}, {"title":"title of post 2", "content":"content of post 2", "id":2}]
+
+def find_post(id):
+    for p in my_posts:
+        if p['id'] == id:
+            return p
 
 @app.get("/")
 async def root():
@@ -30,3 +35,10 @@ def create_posts(post: Post):
     my_posts.append(new_post)
     return {"data": post}
 # title str, content str
+
+@app.get("/posts/{id}")
+def get_post(id: int, response: Response):
+    post = find_post(id)
+    if not post:
+        response.status_code = status.HTTP_404_NOT_FOUND
+    return {"post_detail": post}
